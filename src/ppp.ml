@@ -41,10 +41,14 @@ let asm x =
   output_string !fout (x ^ "\n")
 ;;
 
+let run2 cmd = 
+	Printf.printf "%s\n" cmd;
+	run cmd
+;;
 type r = {
 	name:string;
 	user:string;
-	repo:string;
+	repo:string list;
 	version:string;
 	install:string list;
 	uninstall:string list;
@@ -55,8 +59,13 @@ let install = function
 	| {name=name;user=user;repo=repo;version=version;install=install;uninstall=uninstall;depends=depends} ->
 		Printf.printf "name=%s\n" name;
 		Printf.printf "user=%s\n" user;
-		Printf.printf "repo=%s\n" repo;
 		Printf.printf "version=%s\n" version;
+
+		Printf.printf "repo:\n";
+
+		List.iter (fun cmd ->
+			Printf.printf "  %s\n" cmd
+		) repo;
 
 		Printf.printf "install:\n";
 
@@ -67,7 +76,11 @@ let install = function
 		Printf.printf "depends:\n";
 		List.iter (fun (name,version) ->
 			Printf.printf "  name:%s version:%s\n" name version
-		) depends
+		) depends;
+		let _ = run2 ("mkdir "^user) in
+		let _ = run2 ("cd "^user^";git clone https://github.com/"^user^"/"^(List.hd repo)^".git") in
+		let _ = run2 ("cd "^user^"/"^(String.concat "/" repo)^"; ls") in
+		()
 ;;
 
 let uninstall = function
@@ -90,3 +103,12 @@ let ppp conf =
 		| "uninstall" -> uninstall conf
 		| _ -> usage()
 ;;
+
+let _ =
+	if (Array.length Sys.argv) = 2 then
+		match Sys.argv.(1) with
+		| "-init" -> run2 "cd /usr/local/lib/; git clone https://github.com/hsk/ppp.git"
+		| "-list" -> run2 "cd /usr/local/lib/ppp/; ls"
+	else 0
+;;
+

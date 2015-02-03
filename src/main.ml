@@ -40,15 +40,12 @@ let asm x =
   output_string !fout (x ^ "\n")
 ;;
 
-let rec loop (argv:string array) (i:int) (v:string) : string=
-  if i >= Array.length argv
-  then v
-  else loop argv (i + 1) (v ^ " "^argv.(i))
-;;
 
 let cmd =
-  
-  loop Sys.argv 1 ""
+  match Array.to_list Sys.argv |> List.tl with
+  | x::xs -> x ^ " pp.ml " ^ (String.concat " " xs)
 ;;
-let _ = run ("ocaml "^cmd);;
+Printf.printf "%s\n" cmd;;
+
+let _ = run ("ocaml -I /usr/local/lib/ppp/"^cmd);;
 
